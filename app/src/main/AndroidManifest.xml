@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ====== PERMISOS NECESARIOS ====== -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Especificar que la app usa GPS -->
+    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,11 +23,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
+        android:usesCleartextTraffic="true"
+        android:forceDarkAllowed="true"
         tools:targetApi="31">
 
-        <!-- Splash Screen como actividad principal -->
+        <!-- ====== API KEY DE GOOGLE MAPS ====== -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDNaaCqxDRa4gLzihzOxO2KeSHbKEBK0Ic" />
+
+        <!-- ====== ACTIVIDAD DE SPLASH SCREEN ====== -->
         <activity
-            android:name=".SplashActivity"
+            android:name=".splash.SplashActivity"
             android:theme="@style/Theme.SplashScreen"
             android:exported="true">
             <intent-filter>
@@ -24,16 +43,28 @@
             </intent-filter>
         </activity>
 
-        <!-- Actividad principal -->
+        <!-- ====== ACTIVIDAD DE LOGIN ====== -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true"/>
+            android:name=".ui.login.MainActivity"
+            android:exported="true" />
 
-        <!-- Actividad de registro -->
+        <!-- ====== ACTIVIDAD DE REGISTRO ====== -->
         <activity
-            android:name=".RegisterActivity"
+            android:name=".ui.register.RegisterActivity"
             android:windowSoftInputMode="adjustPan"
-            android:exported="true"/>
+            android:exported="true" />
+
+        <!-- ====== ACTIVIDAD PRINCIPAL ====== -->
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="true" />
+
+        <!-- ====== SERVICIO PARA NOTIFICACIÓN DE GPS ====== -->
+        <service
+            android:name=".service.GPSForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
     </application>
 

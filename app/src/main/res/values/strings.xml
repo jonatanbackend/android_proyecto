@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">App</string>
+    <string name="app_logo">Logo de la aplicación</string>
+    <string name="google_maps_key">AIzaSyDNaaCqxDRa4gLzihzOxO2KeSHbKEBK0Ic</string>
+
+    <!-- Opciones para el Spinner de Estado -->
+    <string-array name="estado_array">
+        <item>INSTALADO</item>
+        <item>RETIRADO</item>
+    </string-array>
+
+    <!-- Opciones para el Spinner de Clase -->
+    <string-array name="clase_array">
+        <item>ACTIVA</item>
+        <item>INACTIVA</item>
+    </string-array>
+
+    <!-- Opciones para Éxito o Fallo -->
+    <string-array name="exito_fallo_options">
+        <item>ÉXITO</item>
+        <item>FALLO</item>
+    </string-array>
 </resources>

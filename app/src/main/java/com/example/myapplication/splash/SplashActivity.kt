@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.splash
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,6 +7,8 @@ import android.os.Looper
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.R
+import com.example.myapplication.ui.login.MainActivity
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

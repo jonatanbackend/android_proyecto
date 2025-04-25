@@ -1,70 +1,200 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/background_color">
+    android:background="@color/background_color"
+    tools:context=".ui.register.RegisterActivity">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/purple_700"
-            android:padding="20dp"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"
-            android:elevation="4dp">
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:contentDescription="@string/app_logo"
+            app:tint="@color/primary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/loginLayout"
+            app:layout_constraintVertical_bias="0.2"/>
 
-            <TextView
-                android:layout_width="wrap_content"
+        <!-- Usuario (login) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/loginLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Usuario"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/logo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginEditText"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="DISICO"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"/>
-        </LinearLayout>
+                android:inputType="textPersonName"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Contraseña -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/passwordLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Datos Personales"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:paddingBottom="8dp"/>
+            android:hint="Contraseña"
+            app:boxBackgroundMode="outline"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/primary"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/loginLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
 
-        <!-- EditTexts siguiendo el mismo formato -->
-        <EditText android:id="@+id/etNombre" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Nombre completo" android:inputType="textPersonName" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etApellido" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Apellido" android:inputType="textPersonName" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etFechaNacimiento" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Fecha de nacimiento" android:inputType="date" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etCorreo" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Correo electrónico" android:inputType="textEmailAddress" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etTelefono" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Teléfono" android:inputType="phone" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etDireccion" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Dirección" android:inputType="textPostalAddress" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etCiudad" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ciudad" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etPais" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="País" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etGenero" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Género" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etOcupacion" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ocupación" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etEmpresa" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Empresa/Institución" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etNivelEducativo" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Nivel educativo" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etEstadoCivil" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Estado civil" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etHijos" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Número de hijos" android:inputType="number" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
-        <EditText android:id="@+id/etIntereses" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Intereses o pasatiempos" android:inputType="text" android:padding="12dp" android:layout_marginBottom="16dp" android:background="@drawable/edittext_background"/>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnRegister"
-            android:layout_width="match_parent"
+        <!-- Empresa (obligatorio) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/empresaLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Empresa"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/passwordLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/empresaEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Nombre completo (opcional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nameLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nombre completo (opcional)"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/empresaLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Correo electrónico (opcional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/emailLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Correo electrónico (opcional)"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/nameLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/emailEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Cedula (opcional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/cedulaLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Cédula (opcional)"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            app:layout_constraintTop_toBottomOf="@id/emailLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/cedulaEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@null"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Botón de Registro -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/registerButton"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Registrarse"
-            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/primary"
             android:textColor="@android:color/white"
-            android:padding="14dp"
-            android:background="@drawable/button_rounded"/>
-    </LinearLayout>
+            android:padding="12dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintTop_toBottomOf="@id/cedulaLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

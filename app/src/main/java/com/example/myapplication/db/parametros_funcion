@@ -1,0 +1,436 @@
+esto es lo que realiza la funcion:
+CREATE OR REPLACE FUNCTION public.fx_pr_legalizacion_disico(pid integer, pfecha date, ptecnico character varying, pplaca character varying, porden character varying, paviso character varying, phora_inicial time without time zone, phora_final time without time zone, psublinea integer, pobservacion text, pacta character varying, pusuario character varying, pempresa character varying, ptarifa integer, pnic character varying, pnis character varying, pnombre character varying, pdireccion character varying, pbarrio character varying, pmunicipio integer, psector integer, ptrafo character varying, pnodo character varying, pcircuito character varying, pestrato integer, ptorden integer, ptacta integer, pefectiva integer, pzona integer, pid_orden integer, pcausal integer, pnombreatiende character varying, pdoc_atiende character varying)
+ RETURNS text
+ LANGUAGE plpgsql
+AS $function$
+
+DECLARE
+varId INTEGER;
+recDigita RECORD;
+recRegistro RECORD;
+varResultado VARCHAR;
+varTpo TEXT;
+varTipoOrden TEXT;
+recMedidor RECORD;
+recEmpresa RECORD;
+varDigita INTEGER;
+
+BEGIN
+
+BEGIN
+
+		FOR recEmpresa IN
+				SELECT x.em_idempresa as qid
+				FROM geros_empresa x
+				WHERE x.em_idempresa = pempresa AND
+				pfecha BETWEEN x.em_fecha_inicio AND CURRENT_DATE
+		LOOP
+		END LOOP;
+
+		varResultado = 'ERROR';
+
+		FOR recMedidor IN
+				SELECT x.mc_medidor as qmedidor
+				FROM pr_maestro_cliente x
+				WHERE x.mc_nic = pnic AND
+				x.mc_empresa = pempresa
+		LOOP
+		END LOOP;
+
+		IF(recEmpresa.qid IS NULL)
+		THEN
+				varResultado = 'La fecha de ejecución no puede ser mayor a la fecha actual ni menor a la fecha inicio del contrato;0';
+
+		ELSE
+				IF(pacta = '0')
+				THEN
+						varResultado = 'Valor para el campo ACTA no valido;0';
+
+				ELSE
+						IF(pid = 0)
+						THEN
+								FOR recDigita IN
+										SELECT l_id as qid,
+										l_acta as qacta,
+										l_orden as qorden
+										FROM pr_legalizacion
+										WHERE l_orden = porden AND
+										l_empresa = pempresa
+								LOOP
+								END LOOP;
+								IF(recDigita.qid IS NULL) THEN varDigita = 0;
+								ELSE
+										IF(recDigita.qorden = '0') THEN varDigita = 0;
+										ELSE varDigita = 1;
+										END IF;
+								END IF;
+
+								IF(varDigita = 0)
+								THEN
+										IF(paviso = '276')
+										THEN
+												INSERT INTO pr_legalizacion(l_fecha_ejecucion, l_hora_inicial, l_hora_final, l_tecnico, l_acta, l_orden, l_placa,
+												l_aviso, l_id_sublinea, l_observacion, l_usuario_graba, l_empresa,
+												l_id_tipoorden, l_id_tipoacta, l_centro_tecnico, l_efectiva, l_hora_graba, l_causal, l_persona_atiende, l_documento_atiende)
+												VALUES(pfecha, phora_inicial, phora_final, ptecnico, UPPER(pacta), UPPER(pacta), UPPER(pplaca), UPPER(paviso),
+												psublinea, UPPER(pobservacion), pusuario, pempresa, ptorden, ptacta,
+												pzona, pefectiva, (now() at time zone 'utc+05'), pcausal, pnombreatiende, pdoc_atiende)
+												RETURNING l_id INTO varId;
+
+												UPDATE pr_programacion_disico_open
+												SET id_legalizacion = varId, estado = 'DIGITADA'
+												WHERE id = pid_orden;
+
+										ELSE
+												INSERT INTO pr_legalizacion(l_fecha_ejecucion, l_hora_inicial, l_hora_final, l_tecnico,
+												l_acta, l_orden, l_placa, l_aviso, l_id_sublinea, l_observacion, l_usuario_graba, l_empresa,
+												l_id_tipoorden, l_id_tipoacta, l_centro_tecnico, l_efectiva, l_hora_graba, l_causal, l_persona_atiende, l_documento_atiende)
+												VALUES(pfecha, phora_inicial, phora_final, ptecnico, UPPER(pacta), UPPER(porden), UPPER(pplaca),
+												UPPER(paviso), psublinea, UPPER(pobservacion), pusuario, pempresa, ptorden, ptacta,
+												pzona, pefectiva, (now() at time zone 'utc+05'), pcausal, pnombreatiende, pdoc_atiende)
+												RETURNING l_id INTO varId;
+
+												UPDATE pr_programacion_disico_open
+												SET id_legalizacion = varId, estado = 'DIGITADA'
+												WHERE id = pid_orden;
+
+										END IF;
+
+										INSERT INTO pr_legalizacion_cliente(lc_id_legalizacion, lc_id_tarifa, lc_estrato, lc_nic, lc_nis,
+										lc_nombre,
+										lc_direccion, lc_barrio, lc_id_municipio,
+										lc_id_sector, lc_trafo,
+										lc_nodo, lc_id_circuito, lc_medidor,
+										lc_usuario_graba, lc_empresa, lc_hora_graba)
+										VALUES(varId, ptarifa, pestrato, pnic, pnis,
+										UPPER(pnombre),
+										UPPER(pdireccion), UPPER(pbarrio), pmunicipio,
+										psector, UPPER(ptrafo),
+										UPPER(pnodo), UPPER(pcircuito), recMedidor.qmedidor,
+										pusuario, pempresa, (now() at time zone 'utc+05'));
+
+										UPDATE pr_programacion
+										SET pr_acta = pacta,
+										pr_consumido = TRUE,
+										pr_id_estado = 273
+										WHERE pr_num_orden = porden AND
+										pr_empresa = pempresa;
+
+										UPDATE pr_programacion
+										SET pr_centro_tecnico = pzona
+										WHERE pr_num_orden = porden AND
+										pr_empresa = pempresa AND
+										pr_centro_tecnico IS NULL;
+
+										FOR recRegistro IN
+												SELECT x.ss_id as qid,
+												y.prid as qidmaterial,
+												z.ta_id as qtipo,
+												x.ss_material as qmaterial,
+												x.ss_marca as qmarca,
+												x.ss_serie as qserie
+												FROM al_movimientos_ss x, al_tcproducto y, pr_tipo_acta z
+												WHERE x.ss_material = y.prcodigo AND
+												x.ss_empresa = y.prempresa AND
+												y.prid = z.ta_id_producto AND
+												x.ss_empresa = pempresa AND
+												x.ss_serie = pacta AND
+												y.prtipoproducto = 92	AND
+												x.ss_tecnico = ptecnico AND
+												x.ss_estado = 26 AND
+												x.ss_acta = '0'
+										LOOP
+													UPDATE al_movimientos_ss
+													SET ss_acta = pacta
+													WHERE ss_id = recRegistro.qid AND
+													ss_tecnico = ptecnico;
+
+													UPDATE al_movimientos_tecnico
+													SET mt_cantidad = mt_cantidad - 1
+													WHERE mt_tecnico = ptecnico AND
+													mt_id_producto = recRegistro.qidmaterial AND
+													mt_empresa = pempresa;
+
+													UPDATE pr_legalizacion
+													SET l_id_acta = recRegistro.qid
+													WHERE l_id = varId;
+
+													UPDATE al_movimientos_historico_estado_serie
+													SET mhe_acta = UPPER(pacta),
+													mhe_orden = UPPER(porden),
+													mhe_nic = pnic,
+													mhe_fecha_ejecucion = pfecha
+													WHERE mhe_codmaterial = recRegistro.qmaterial AND
+													mhe_marca = recRegistro.qmarca AND
+													mhe_serie = UPPER(pacta) AND
+													mhe_empresa = pempresa;
+
+													UPDATE al_movimientos_historico_estado_serie SET mhe_acta = pacta, mhe_orden = porden, mhe_nic = pnic, mhe_fecha_ejecucion = pfecha,
+													mhe_fecha_digita = CURRENT_DATE, mhe_hora_digita = (now() at time zone 'utc+05')
+													WHERE mhe_codmaterial = recRegistro.qmaterial AND
+													mhe_marca = recRegistro.qmarca AND
+													mhe_serie = recRegistro.qserie AND
+													mhe_empresa = pempresa;
+
+										END LOOP;
+
+										INSERT INTO pr_legalizacion_cuadrilla(lc_id_legalizacion, lc_cuadrilla, lc_tecnico, lc_usuario_graba, lc_empresa,
+										lc_valor, lc_tipo_tecnico, lc_codigo_alias)
+										SELECT varId,
+										x.pr_codigo,
+										y.pri_tecnico,
+										pusuario,
+										pempresa,
+										x.pr_valor_dia,
+										y.pri_tipo,
+										COALESCE(y.pri_codigo_alias,'0')
+										FROM pr_cuadrillas x, pr_cuadrillas_tecnicos y
+										WHERE x.pr_codigo = (SELECT y.pr_codigo
+											FROM pr_cuadrillas_tecnicos x, pr_cuadrillas y
+											WHERE x.pri_tecnico = ptecnico AND
+											x.pri_empresa = pempresa AND
+											x.pri_id_cuadrilla = y.pr_id) AND
+										x.pr_empresa = pempresa AND
+										x.pr_id = y.pri_id_cuadrilla;
+
+										-- UPDATE estado orden legalizada
+										UPDATE pr_programacion_disico_open SET estado = 'DIGITADO'
+													WHERE id_orden = porden AND
+													empresa = pempresa;
+
+										-- RETURN 'Registro guardado con exito'||';'||varId;
+										varResultado = 'Registro guardado con exito'||';'||varId;
+
+								ELSE
+										varResultado = 'La orden '||porden||' esta digitada en el acta '||recDigita.qacta||';0';
+
+								END IF;
+
+						ELSE
+								FOR recRegistro IN
+										SELECT x.l_orden as qorden
+										FROM pr_legalizacion x
+										WHERE x.l_id = pid
+								LOOP
+											UPDATE pr_programacion
+											SET pr_acta = NULL,
+											pr_consumido = FALSE
+											WHERE pr_num_orden = recRegistro.qorden AND
+											pr_empresa = pempresa AND
+											pr_id_activo = TRUE;
+								END LOOP;
+
+								UPDATE pr_legalizacion
+								SET l_fecha_ejecucion = pfecha,
+								l_hora_inicial = phora_inicial,
+								l_hora_final = phora_final,
+								l_orden = UPPER(porden),
+								l_placa = UPPER(pplaca),
+								l_aviso = UPPER(paviso),
+								l_observacion = UPPER(pobservacion),
+								l_usuario_modifica = pusuario,
+								l_fecha_modifica = CURRENT_DATE,
+								l_hora_modifica = (now() at time zone 'utc+05'),
+								l_id_tipoorden = ptorden,
+								l_id_tipoacta = ptacta,
+								l_id_sublinea = psublinea,
+								l_centro_tecnico = pzona,
+								l_efectiva = pefectiva
+								WHERE l_id = pid;
+
+								UPDATE pr_legalizacion
+								SET l_id_sublinea = psublinea,
+								l_fecha_ejecucion = pfecha,
+								l_orden = UPPER(porden)
+								WHERE l_id = pid;
+
+								UPDATE pr_legalizacion_cliente
+								SET lc_id_tarifa = ptarifa,
+								lc_estrato = pestrato,
+								lc_nic = pnic,
+								lc_nis = pnis,
+								lc_nombre = UPPER(pnombre),
+								lc_direccion = UPPER(pdireccion),
+								lc_barrio = UPPER(pbarrio),
+								lc_id_municipio = pmunicipio,
+								lc_id_sector = psector,
+								lc_trafo = UPPER(ptrafo),
+								lc_nodo = UPPER(pnodo),
+								lc_id_circuito = UPPER(pcircuito),
+								lc_usuario_modifica = pusuario,
+								lc_fecha_modifica = CURRENT_DATE,
+								lc_hora_modifica = (now() at time zone 'utc+05')
+								WHERE lc_id_legalizacion = pid;
+
+								varId = pid;
+
+								-- RETURN 'Registro actualizado con exito'||';'||varId;
+								varResultado = 'Registro actualizado con exito'||';'||varId;
+
+						END IF;
+
+						BEGIN
+								INSERT INTO pr_maestro_cliente(mc_nic, mc_nis, mc_tarifa, mc_estrato, mc_nombre, mc_direccion, mc_barrio, mc_id_municipio,
+								mc_id_sector, mc_trafo, mc_nodo, mc_circuito, mc_empresa, mc_usuario_graba, mc_fecha_acta)
+								VALUES(pnic, pnis, ptarifa, pestrato, UPPER(pnombre), UPPER(pdireccion), UPPER(pbarrio), pmunicipio,
+								psector, UPPER(ptrafo), UPPER(pnodo), UPPER(pcircuito), pempresa, pusuario, pfecha);
+
+						EXCEPTION WHEN unique_violation
+						THEN
+								BEGIN
+										IF(pnis <> '0')
+										THEN
+												IF(ptorden < 276)
+												THEN
+														UPDATE pr_maestro_cliente
+														SET mc_nis = pnis,
+														mc_tarifa = ptarifa,
+														mc_estrato = pestrato,
+														mc_nombre = UPPER(pnombre),
+														mc_direccion = UPPER(pdireccion),
+														mc_barrio = UPPER(pbarrio),
+														mc_id_municipio = pmunicipio,
+														mc_id_sector = psector,
+														mc_trafo = UPPER(ptrafo),
+														mc_nodo = UPPER(pnodo),
+														mc_circuito = UPPER(pcircuito),
+														mc_usuario_modifica = pusuario,
+														mc_fecha_modifica = CURRENT_DATE,
+														mc_hora_modifica = (now() at time zone 'utc+05'),
+														mc_fecha_acta = pfecha
+														WHERE mc_nic = pnic AND
+														mc_empresa = pempresa;
+
+												END IF;
+
+										END IF;
+
+								EXCEPTION WHEN unique_violation
+								THEN
+								END;
+
+						END;
+
+						/*BEGIN
+								INSERT INTO pr_programacion(pr_nro_tpo, pr_nic, pr_nis, pr_num_orden, pr_tipo_os, pr_f_estm_res, pr_f_uce, pr_f_puest_trat,
+								pr_acta, pr_consumido, pr_empresa, pr_usugraba, pr_fecha_lote, pr_centro_tecnico, pr_id_estado)
+								(SELECT COALESCE(cu.pr_tpo,'0') as qtpo,
+								cl.lc_nic as qnic,
+								cl.lc_nis as qnis,
+								x.l_orden as qorden,
+								tor.to_codigo as qtipoorden,
+								to_char(x.l_fecha_ejecucion,'yyyymmdd'),
+								to_char(x.l_fecha_ejecucion,'yyyymmdd'),
+								to_char(x.l_fecha_ejecucion,'yyyymmdd'),
+								x.l_acta as qacta,
+								true,
+								pempresa,
+								pusuario,
+								x.l_fecha_ejecucion,
+								x.l_centro_tecnico,
+								272
+								FROM pr_legalizacion x, pr_cuadrillas_tecnicos te, pr_cuadrillas cu, pr_legalizacion_cliente cl, pr_tipo_orden tor
+								WHERE x.l_tecnico = te.pri_tecnico AND
+								x.l_empresa = te.pri_empresa AND
+								te.pri_id_cuadrilla = cu.pr_id AND
+								x.l_id = cl.lc_id_legalizacion AND
+								x.l_id_tipoorden = tor.to_id AND
+								x.l_acta = pacta AND
+								x.l_empresa = pempresa);
+
+						EXCEPTION WHEN unique_violation
+						THEN*/
+								UPDATE pr_programacion
+								SET pr_acta = pacta,
+								pr_consumido = TRUE,
+								pr_id_estado = 273,
+								pr_id_legalizacion = varId
+								WHERE pr_num_orden = porden AND
+								pr_empresa = pempresa AND
+								pr_id_activo = TRUE;
+
+								UPDATE pr_programacion
+								SET pr_centro_tecnico = pzona,
+								pr_id_estado = 273,
+								pr_id_legalizacion = varId
+								WHERE pr_num_orden = porden AND
+								pr_empresa = pempresa AND
+								pr_centro_tecnico IS NULL AND
+								pr_id_activo = TRUE;
+
+						-- END;
+
+
+						WITH qconsulta as (
+								SELECT DISTINCT x.l_id as qacta,
+								z.ba_sublinea as qsublinea
+								FROM pr_legalizacion x, pr_legalizacion_actividad y, pr_campania_baremo z
+								WHERE x.l_id = y.la_id_legalizacion AND
+								y.la_id_baremo = z.ba_id AND
+								x.l_id_sublinea IS NULL AND
+								x.l_empresa = pempresa
+								ORDER BY x.l_id
+						)
+						UPDATE pr_legalizacion
+						SET l_id_sublinea = qconsulta.qsublinea
+						FROM qconsulta
+						WHERE l_id = qconsulta.qacta AND
+						l_id_sublinea IS NULL;
+
+				END IF;
+
+				BEGIN
+						-- DELETE FROM pr_legalizacion_ultima WHERE lu_usuario = pusuario;
+						INSERT INTO pr_legalizacion_ultima(lu_usuario, lu_sublinea, lu_empresa, lu_fecha_graba, lu_hora_graba)
+						VALUES(pusuario, psublinea, pempresa, CURRENT_DATE, (now() at time zone 'utc+05'));
+
+				EXCEPTION WHEN unique_violation
+				THEN
+						UPDATE pr_legalizacion_ultima
+						SET lu_sublinea = psublinea,
+						lu_fecha_graba = CURRENT_DATE,
+						lu_hora_graba = (now() at time zone 'utc+05'),
+						lu_fecha_modifica = CURRENT_DATE,
+						lu_hora_modifica = (now() at time zone 'utc+05')
+						WHERE lu_usuario = pusuario AND
+						lu_empresa = pempresa;
+
+				END;
+
+				WITH qtabla AS (
+						SELECT x.l_id as qid,
+						y.prc_conformacion as qcuadrilla
+						FROM pr_legalizacion x, pr_cuadrillas_conformacion y
+						WHERE x.l_tecnico = y.prc_tecnico AND
+						x.l_empresa = y.prc_empresa AND
+						x.l_empresa = pempresa AND
+						x.l_fecha_graba = CURRENT_DATE AND
+						x.l_conformacion_cuadrilla IS NULL AND
+						x.l_usuario_graba = pusuario
+				)
+				UPDATE pr_legalizacion
+				SET l_conformacion_cuadrilla = qtabla.qcuadrilla
+				FROM qtabla
+				WHERE l_id = qtabla.qid;
+
+		END IF;
+
+		UPDATE pr_legalizacion
+		SET l_periodo = (to_char(l_fecha_ejecucion,'yyyy-mm-01'))::DATE
+		WHERE l_periodo IS NULL AND
+		l_empresa = pempresa;
+
+
+EXCEPTION WHEN OTHERS
+THEN
+    varResultado = 'Error: '||SQLSTATE||' - '||SQLERRM||';0';
+END;
+
+RETURN varResultado;
+
+END
+$function$
+
+
+y estos me dijieron que eran los parametros que me dieron:
+pid integer, pfecha date, ptecnico character varying, pplaca character varying, porden character varying, paviso character varying, phora_inicial time without time zone, phora_final time without time zone, psublinea integer, pobservacion text, pacta character varying, pusuario character varying, pempresa character varying, ptarifa integer, pnic character varying, pnis character varying, pnombre character varying, pdireccion character varying, pbarrio character varying, pmunicipio integer, psector integer, ptrafo character varying, pnodo character varying, pcircuito character varying, pestrato integer, ptorden integer, ptacta integer, pefectiva integer, pzona integer, pid_orden integer, pcausal integer, pnombreatiende character varying, pdoc_atiende character varyi

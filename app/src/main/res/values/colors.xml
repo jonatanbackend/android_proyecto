@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background_color">#F5F5F5</color>  <!-- Fondo gris claro -->
-    <color name="primary">#6200EE</color>  <!-- Morado vibrante (Color principal) -->
-    <color name="secondary">#9B59B6</color>  <!-- Verde azulado (Color de acento) -->
-    <color name="text_primary">#212121</color>  <!-- Negro grisáceo (Texto principal) -->
-    <color name="text_secondary">#757575</color>  <!-- Gris oscuro (Texto secundario) -->
-    <color name="input_background">#FFFFFF</color>  <!-- Fondo blanco para inputs -->
-    <color name="input_border">#BDBDBD</color>  <!-- Borde gris para los inputs -->
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
+    <!-- Colores de fondo -->
+    <color name="background_color">#F5F5F5</color> <!-- Fondo gris claro -->
+    <color name="input_background">#FFFFFF</color> <!-- Fondo blanco para inputs -->
+
+    <!-- Colores principales -->
+    <color name="primary">#006400</color> <!-- Verde oscuro (Color principal) -->
+    <color name="primary_light">#008000</color> <!-- Verde estándar -->
+    <color name="primary_dark">#004d00</color> <!-- Verde más oscuro -->
+
+    <!-- Colores secundarios -->
+    <color name="secondary">#9B59B6</color> <!-- Morado (puedes cambiarlo si no aplica) -->
+    <color name="accent">#32CD32</color> <!-- Verde lima para acentos -->
+
+    <!-- Colores de texto -->
+    <color name="text_primary">#212121</color> <!-- Negro grisáceo (Texto principal) -->
+    <color name="text_secondary">#757575</color> <!-- Gris oscuro (Texto secundario) -->
+    <color name="text_button">#FFFFFF</color> <!-- Blanco para texto en botones -->
+
+    <!-- Colores de bordes -->
+    <color name="input_border">#BDBDBD</color> <!-- Borde gris para los inputs -->
+    <color name="button_border">#006400</color> <!-- Verde oscuro para bordes de botones -->
+
+    <!-- Otros colores -->
     <color name="white">#FFFFFF</color>
-    <color name="textFieldBackground">#F0F0F0</color>
-
-
-
+    <color name="textFieldBackground">#F0F0F0</color> <!-- Fondo gris claro para campos de texto -->
 </resources>

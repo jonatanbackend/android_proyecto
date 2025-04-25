@@ -1,0 +1,137 @@
+CREATE OR REPLACE FUNCTION public.fx_pr_legalizacion_sello(pid integer, pidlegaliza integer, pestado integer, pubicacion integer, pidmaterial integer, pmarca character varying, pserie character varying, pusuario character varying, pempresa character varying)
+ RETURNS text
+ LANGUAGE plpgsql
+AS $function$
+    
+DECLARE
+recLegaliza RECORD;
+recMaterial RECORD;
+recAlmacen RECORD;
+        
+BEGIN
+
+FOR recLegaliza IN
+		SELECT x.l_acta as qacta,
+		x.l_orden as qorden,
+		x.l_tecnico as qtecnico,
+		x.l_fecha_ejecucion as qfecha,
+		y.lc_nic as qnic 
+		FROM pr_legalizacion x, pr_legalizacion_cliente y  
+		WHERE x.l_id = y.lc_id_legalizacion AND 
+		x.l_id = pidlegaliza
+LOOP
+END LOOP;
+
+FOR recMaterial IN
+		SELECT x.prcodigo as qcodigo
+		FROM al_tcproducto x 
+		WHERE x.prid = pidmaterial 
+LOOP
+END LOOP;
+
+BEGIN
+		IF(pid = 0)
+		THEN
+				IF(pestado = 93) 
+				THEN
+						FOR recAlmacen IN
+								SELECT ss_id as qid,
+								COALESCE(ss_tecnico,'0') as qtecnico,
+								COALESCE(ss_acta,'0') as qacta
+								FROM al_movimientos_ss 
+								WHERE ss_material = recMaterial.qcodigo AND 
+								ss_marca = pmarca AND 
+								ss_serie = pserie AND 
+								ss_empresa = pempresa
+						LOOP
+						END LOOP;
+						IF(recAlmacen.qid IS NULL)
+						THEN
+								RETURN 'Sello no existe en el inventario de Almacen';
+								
+						ELSE
+								IF(recAlmacen.qtecnico = '0')
+								THEN
+										RETURN 'Sello no asignado al técnico';
+										
+								ELSE
+										IF(recAlmacen.qtecnico <> recLegaliza.qtecnico)
+										THEN
+												RETURN 'Sello asignado a otro técnico';
+												
+										ELSE
+												IF(recAlmacen.qacta <> '0') 
+												THEN
+														RETURN 'Sello legalizado en el Acta No. '||recAlmacen.qacta;
+														
+												ELSE
+														IF(recAlmacen.qid IS NOT NULL)
+														THEN
+																INSERT INTO pr_legalizacion_sello(lsel_id_legalizacion, lsel_id_estado, lsel_id_ubicacion, 
+																lsel_id_producto, lsel_marca, lsel_serie, lsel_usuario_graba, lsel_empresa, lsel_id_almacen) 
+																VALUES(pidlegaliza, pestado, pubicacion, 
+																pidmaterial, pmarca, pserie, pusuario, pempresa, recAlmacen.qid);	
+
+																UPDATE al_movimientos_ss 
+																SET ss_acta = recLegaliza.qacta 
+																WHERE ss_id = recAlmacen.qid AND 
+																ss_empresa = pempresa;
+																
+																UPDATE al_movimientos_tecnico 
+																SET mt_cantidad = mt_cantidad - 1 
+																WHERE mt_tecnico = recLegaliza.qtecnico AND 
+																mt_id_producto = pidmaterial AND 
+																mt_empresa = pempresa;	
+	
+																UPDATE pr_legalizacion  
+																SET l_materiales = 1 
+																WHERE l_id = pidlegaliza AND 
+																l_materiales = 0;	
+															
+																UPDATE al_movimientos_historico_estado_serie 
+																SET mhe_acta = recLegaliza.qacta, 
+																mhe_orden = recLegaliza.qorden, 
+																mhe_nic = recLegaliza.qnic, 
+																mhe_fecha_ejecucion = recLegaliza.qfecha, 
+																mhe_fecha_digita = CURRENT_DATE, 
+																mhe_hora_digita = CURRENT_TIME 
+																WHERE mhe_codmaterial = recMaterial.qcodigo AND 
+																mhe_marca = pmarca AND 
+																mhe_serie = pserie AND 
+																mhe_empresa = pempresa;																
+																
+														END IF;
+														
+												END IF;
+												
+										END IF;
+										
+								END IF;
+								
+						END IF;
+						
+				ELSE 
+						INSERT INTO pr_legalizacion_sello(lsel_id_legalizacion, lsel_id_estado, lsel_id_ubicacion, 
+						lsel_id_producto, lsel_marca, lsel_serie, lsel_usuario_graba, lsel_empresa) 
+						VALUES(pidlegaliza, pestado, pubicacion, 
+						pidmaterial, UPPER(pmarca), pserie, pusuario, pempresa);	
+				
+				END IF;	
+				
+		ELSE 
+				UPDATE pr_legalizacion_sello 
+				SET lsel_id_ubicacion = pubicacion
+				WHERE lmed_id = pid;
+		
+		END IF;
+
+EXCEPTION WHEN unique_violation 
+THEN
+		RETURN 'Sello ya ingresado';
+
+END;
+
+RETURN 'ERROR';
+
+END
+$function$

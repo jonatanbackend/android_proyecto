@@ -1,0 +1,63 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Mapa de Google -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
+
+    <!-- Texto de ubicación -->
+    <TextView
+        android:id="@+id/locationTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ubicación no disponible"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:padding="8dp" />
+
+    <!-- Botones principales -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:padding="12dp">
+
+        <Button
+            android:id="@+id/btnCrearRuta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Crear Ruta" />
+
+        <Button
+            android:id="@+id/toggleFollowButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Activar Seguimiento"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
+    <!-- Botón para rutas guardadas -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingBottom="16dp">
+
+        <Button
+            android:id="@+id/btnRutasGuardadas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver Rutas Guardadas" />
+    </LinearLayout>
+
+</LinearLayout>
